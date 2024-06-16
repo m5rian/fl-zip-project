@@ -51,6 +51,14 @@ def printLoading(condition, suffix = ''):
         time.sleep(.1)
         i += 1
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # Configuration
 print("FL Studio Project Exporter by marian (: Enjoy!")
 print("---------------------------------------------")
@@ -96,21 +104,21 @@ def recursive_save(directory):
 
 def fl_project_contains_problems():
     try:
-        pyautogui.locateOnScreen('./images/fl-studio-loading-problems.png', grayscale=True, confidence=0.8)
+        pyautogui.locateOnScreen(resource_path('images/fl-studio-loading-problems.png'), grayscale=True, confidence=0.8)
         return True
     except:
         return False
     
 def fl_processing_zip():
     try:
-        pyautogui.locateOnScreen('./images/fl-studio-processing-zip.png', grayscale=True, confidence=0.8)
+        pyautogui.locateOnScreen(resource_path('images/fl-studio-processing-zip.png'), grayscale=True, confidence=0.8)
         return True
     except:
         return False
 
 def has_overwrite_problem():
     try:
-        pyautogui.locateOnScreen('./images/win-overwrite-error.png', grayscale=True, confidence=0.8)
+        pyautogui.locateOnScreen(resource_path('images/win-overwrite-error.png'), grayscale=True, confidence=0.8)
         return True
     except:
         return False
@@ -121,10 +129,10 @@ def save_project(path):
     global projects_saved
     printProgressBar(projects_saved, project_count, prefix = 'Progress:', suffix = path, length = 50)
 
-    fileTabLocation = pyautogui.locateOnScreen('./images/fl-studio-file-tab.png', grayscale=True, confidence=0.8)
+    fileTabLocation = pyautogui.locateOnScreen(resource_path('images/fl-studio-file-tab.png'), grayscale=True, confidence=0.8)
     pyautogui.click(fileTabLocation)
 
-    openButton = pyautogui.locateOnScreen('./images/fl-studio-open-button.png', grayscale=True, confidence=0.8)
+    openButton = pyautogui.locateOnScreen(resource_path('images/fl-studio-open-button.png'), grayscale=True, confidence=0.8)
     pyautogui.click(openButton)
 
     pyautogui.write(path) # Enters the path of the file
@@ -136,18 +144,18 @@ def save_project(path):
     # Check if the file has any problems, if so, ignore them
     if fl_project_contains_problems():
         printProgressBar(projects_saved, project_count, prefix = 'Progress:', suffix = path + " ⚠ Problems found - ignoring...", length = 50)
-        okToProblems = pyautogui.locateCenterOnScreen('./images/fl-studio-loading-problems-ok.png', grayscale=True, confidence=0.8)
+        okToProblems = pyautogui.locateCenterOnScreen(resource_path('images/fl-studio-loading-problems-ok.png'), grayscale=True, confidence=0.8)
         pyautogui.click(okToProblems)
 
-    fileTabLocation = pyautogui.locateOnScreen('./images/fl-studio-file-tab.png', grayscale=True, confidence=0.8)
+    fileTabLocation = pyautogui.locateOnScreen(resource_path('images/fl-studio-file-tab.png'), grayscale=True, confidence=0.8)
     pyautogui.click(fileTabLocation)
 
-    exportButton =  pyautogui.locateOnScreen('./images/fl-studio-export-button.png', grayscale=True, confidence=0.8)
+    exportButton =  pyautogui.locateOnScreen(resource_path('images/fl-studio-export-button.png'), grayscale=True, confidence=0.8)
     pyautogui.click(exportButton)
 
     time.sleep(1)
 
-    exportButton =  pyautogui.locateOnScreen('./images/fl-studio-export-zipped.png', grayscale=True, confidence=0.8)
+    exportButton =  pyautogui.locateOnScreen(resource_path('images/fl-studio-export-zipped.png'), grayscale=True, confidence=0.8)
     pyautogui.click(exportButton)
 
     pyautogui.write(path.removesuffix("flp") + "zip") # Enters the path of the file
