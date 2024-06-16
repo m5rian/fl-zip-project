@@ -1,0 +1,6 @@
+.git
+.idea
+.venv
+build
+dist
+fl-zip-project.iml
