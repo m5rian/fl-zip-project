@@ -72,8 +72,9 @@ project_count = -1
 def count_files_recursively(directory):
     count = 0
     for file in os.listdir(directory):
-        if os.path.isdir(os.path.join(directory, file)):
-            count += count_files(os.path.join(directory, file))
+        full_path = os.path.join(directory, file)
+        if os.path.isdir(full_path):
+            count += count_files_recursively(full_path)  # <-- fixed here
         elif file.endswith(".flp"):
             count += 1
     return count
@@ -135,6 +136,8 @@ def save_project(path):
     openButton = pyautogui.locateOnScreen(resource_path('images/fl-studio-open-button.png'), grayscale=True, confidence=0.8)
     pyautogui.click(openButton)
 
+    time.sleep(1)
+
     pyautogui.write(path) # Enters the path of the file
     pyautogui.press('enter') # Presses Enter to open the file
 
@@ -155,11 +158,13 @@ def save_project(path):
 
     time.sleep(1)
 
-    exportButton =  pyautogui.locateOnScreen(resource_path('images/fl-studio-export-zipped.png'), grayscale=True, confidence=0.8)
+    exportButton = pyautogui.locateOnScreen(resource_path('images/fl-studio-export-zipped.png'), grayscale=True, confidence=0.8)
     pyautogui.click(exportButton)
 
     pyautogui.write(path.removesuffix("flp") + "zip") # Enters the path of the file
     pyautogui.press('enter') # Presses Enter to save the file
+
+    time.sleep(1) # Wait for windows file explorer to open
 
     # Check for overwrite error
     if has_overwrite_problem():
@@ -169,6 +174,8 @@ def save_project(path):
         else:
             pyautogui.press('enter')
             pyautogui.press('esc')
+
+    time.sleep(1) # Wait for windows file explorer to
 
     # Wait for the file to load
     while fl_processing_zip():
