@@ -22,7 +22,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     bar = fill * filledLength + '-' * (length - filledLength)
     print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
     # Print New Line on Complete
-    if iteration == total: 
+    if iteration == total:
         print()
 
 def printLoading(condition, suffix = ''):
@@ -87,7 +87,7 @@ try:
         global project_count
         project_count = count_files_recursively(directory)
     Thread(target = count_files).start()
-    
+
     def check_initialized():
         return project_count == -1
     printLoading(check_initialized, "Initializing...")
@@ -109,7 +109,7 @@ def fl_project_contains_problems():
         return True
     except:
         return False
-    
+
 def fl_processing_zip():
     try:
         pyautogui.locateOnScreen(resource_path('images/fl-studio-processing-zip.png'), grayscale=True, confidence=0.8)
@@ -124,16 +124,38 @@ def has_overwrite_problem():
     except:
         return False
 
+def fl_loading_project(retry):
+    # Check for loading label
+    try:
+        pyautogui.locateOnScreen(resource_path('images/fl-studio-loading.png'), grayscale=True, confidence=0.8)
+        return True
+    except:
+        if retry == 0:
+            return False
+        else:
+            time.sleep(1)
+            return fl_loading_project(retry-1)
+
+def locate_on_screen(image_name):
+    image_path = resource_path(f'images/{image_name}')
+    try:
+        return pyautogui.locateOnScreen(image_path, grayscale=True, confidence=0.7)
+    except pyautogui.ImageNotFoundException:
+        raise pyautogui.ImageNotFoundException(f"Image not found: {image_path}")
+
+def cursor_is_loading():
+    print(win32gui.GetCursorInfo())
+
 projects_saved = 0
 
-def save_project(path):   
+def save_project(path):
     global projects_saved
     printProgressBar(projects_saved, project_count, prefix = 'Progress:', suffix = path, length = 50)
 
-    fileTabLocation = pyautogui.locateOnScreen(resource_path('images/fl-studio-file-tab.png'), grayscale=True, confidence=0.8)
+    fileTabLocation = locate_on_screen('fl-studio-file-tab.png')
     pyautogui.click(fileTabLocation)
 
-    openButton = pyautogui.locateOnScreen(resource_path('images/fl-studio-open-button.png'), grayscale=True, confidence=0.8)
+    openButton = locate_on_screen('fl-studio-open-button.png')
     pyautogui.click(openButton)
 
     time.sleep(1)
@@ -141,8 +163,9 @@ def save_project(path):
     pyautogui.write(path) # Enters the path of the file
     pyautogui.press('enter') # Presses Enter to open the file
 
-    # Wait for the file to load
-    time.sleep(10)
+    # Wait for the project to load
+    while fl_loading_project(3):
+        time.sleep(1)
 
     # Check if the file has any problems, if so, ignore them
     if fl_project_contains_problems():
@@ -150,15 +173,17 @@ def save_project(path):
         okToProblems = pyautogui.locateCenterOnScreen(resource_path('images/fl-studio-loading-problems-ok.png'), grayscale=True, confidence=0.8)
         pyautogui.click(okToProblems)
 
-    fileTabLocation = pyautogui.locateOnScreen(resource_path('images/fl-studio-file-tab.png'), grayscale=True, confidence=0.8)
+    fileTabLocation = locate_on_screen('fl-studio-file-tab.png')
     pyautogui.click(fileTabLocation)
 
-    exportButton =  pyautogui.locateOnScreen(resource_path('images/fl-studio-export-button.png'), grayscale=True, confidence=0.8)
+    time.sleep(.5)
+
+    exportButton =  locate_on_screen('fl-studio-export-button.png')
     pyautogui.click(exportButton)
 
     time.sleep(1)
 
-    exportButton = pyautogui.locateOnScreen(resource_path('images/fl-studio-export-zipped.png'), grayscale=True, confidence=0.8)
+    exportButton = locate_on_screen('fl-studio-export-zipped.png')
     pyautogui.click(exportButton)
 
     pyautogui.write(path.removesuffix("flp") + "zip") # Enters the path of the file
@@ -177,7 +202,7 @@ def save_project(path):
 
     time.sleep(1) # Wait for windows file explorer to
 
-    # Wait for the file to load
+    # Wait for the project to be exported
     while fl_processing_zip():
         time.sleep(1)
 
@@ -200,5 +225,5 @@ try:
         recursive_delete(os.fsdecode(folderName))
 
     print("\nAll done!")
-except pyautogui.ImageNotFoundException:
-    sys.exit("\nFL Studio not found. Make sure FL Studio is open and its gui scale is set to 100%.")
+except pyautogui.ImageNotFoundException as e:
+    sys.exit(f"\nError: {e}\nMake sure FL Studio is open and its GUI scale is set to 100%.")
